@@ -1,0 +1,11 @@
+{
+    "cSpell.words": [
+        "Ttoken",
+        "vsome",
+        "vsomeip"
+    ],
+    "files.associations": {
+        "iostream": "cpp",
+        "iomanip": "cpp"
+    }
+}

@@ -1,0 +1,9 @@
+/home/abbas/grad_proj_repos/backend-gateway-service/build/CMakeFiles/backend_gateway.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/CMakeFiles/edit_cache.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/CMakeFiles/rebuild_cache.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/http_client/CMakeFiles/http_client.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/http_client/CMakeFiles/edit_cache.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/http_client/CMakeFiles/rebuild_cache.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/someipService/CMakeFiles/someipservice.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/someipService/CMakeFiles/edit_cache.dir
+/home/abbas/grad_proj_repos/backend-gateway-service/build/dependencies/someipService/CMakeFiles/rebuild_cache.dir
