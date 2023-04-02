@@ -26,6 +26,7 @@ public:
     //! @brief  insert body data take care data is copied better use std::move(data)
     //! @param  data string containing body data
     HttpRequestBuilder& addDataToBody(const std::string& data);
+    HttpRequestBuilder& addDataToBody(const uint8_t* data, uint32_t size);
     //! @brief  insert body data take care data is copied better use std::move(data)
     //! @param  data string containing body data
     HttpRequestBuilder& addDataToBody(std::string&& data);

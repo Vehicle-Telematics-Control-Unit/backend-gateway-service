@@ -12,15 +12,12 @@ static constexpr char CONTENT_TYPE_JSON[] = "Content-Type: application/json";
 void sendRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
-    std::string jsonObj = "{ \"name\" : \"abbas\" , \"age\" : \"55\" }";
     std::string token = "TOKEN";
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addJWTtokenToHeader(token)
-                                .addDataToBody(std::move(jsonObj))
+                                .addDataToBody(_request->get_payload()->get_data(), _request->get_payload()->get_length())
                                 .addDataToHeader("head", "data1")
                                 .build();
-
-    std::cout << jsonObj << '\n';
 
     if (httpRequest->send() == CURLE_OK)
     {
@@ -29,11 +26,9 @@ void sendRequestToServer(const std::shared_ptr<vsomeip::message> &_request, cons
     }
 
     std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
-
     std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
-    std::vector<vsomeip::byte_t> its_payload_data;
-    for (std::size_t i = 0; i < 120; ++i)
-        its_payload_data.push_back(static_cast<vsomeip::byte_t>(i % 256));
+
+    std::vector<vsomeip::byte_t> its_payload_data = {'O', 'K', '\n', 0};
     its_payload->set_data(its_payload_data);
     its_response->set_payload(its_payload);
 
