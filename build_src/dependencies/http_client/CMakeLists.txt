@@ -2,10 +2,7 @@ set(BUILD_LIB_NAME http_client)
 cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_CXX_STANDARD 17)
 
-
-set(curl_installation_dir $ENV{LIBCURL_INSTALLATION_PATH})
-
-find_library(curl_lib curl NAMES libcurl PATHS ${curl_installation_dir}/build/lib)
+find_library(curl_lib curl NAMES libcurl)
 
 if(${curl_lib} STREQUAL curl_lib-NOTFOUND)
     message("NOT FOUND")
@@ -23,8 +20,7 @@ add_library(${BUILD_LIB_NAME} SHARED
 )
 
 include_directories(
-    ${curl_installation_dir}/include/curl 
-    ${curl_installation_dir}/lib/
+    ${CURL_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
