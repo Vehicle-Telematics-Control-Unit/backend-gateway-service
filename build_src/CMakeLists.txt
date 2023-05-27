@@ -11,7 +11,7 @@ target_link_libraries(${PROJECT_NAME} http_client someipservice)
 
 target_include_directories(${PROJECT_NAME} PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
-    /home/abbas/grad_proj_repos/sand_box/vsomeip_containers/vsomeip-3.1.20.3/interface
+    # /home/abbas/grad_proj_repos/sand_box/vsomeip_containers/vsomeip-3.1.20.3/interface
     )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

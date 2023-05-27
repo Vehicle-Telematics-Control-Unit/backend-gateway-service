@@ -4,14 +4,39 @@
 #include "http_client/HttpRequestBuilder.hpp"
 #include "someipService/ServiceManagerAdapter.hpp"
 #include "servicesId.hpp"
+#include "nlohmann/json.hpp"
 #include "Authenticator.hpp"
+
+
+void test()
+{
+    using json = nlohmann::json;
+    json exampleJson = {
+        {"happy", true},
+        {"pi", 3.141},
+    };
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
+    std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
+                                .addJWTokenToHeader("token")
+                                .addDataToHeader("Content-Type", "application/json")
+                                .addDataToBody(exampleJson.dump(4))
+                                .build();
+
+    if (httpRequest->send() == CURLE_OK)
+    {
+        std::cout << "[" << httpRequest->getResponse() << "]\n";
+        std::cout << "[" << httpRequest->getResponseHeader() << "]\n";
+    }
+
+}
 
 void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
+    test();
+
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
     std::string token = "TOKEN";
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
-                                .addJWTokenToHeader(token)
                                 .addDataToHeader("Content-Type", "application/json")
                                 .addDataToBody(_request->get_payload()->get_data(), _request->get_payload()->get_length())
                                 .addJWTokenToHeader(Authenticator::getInstance()->getToken())
@@ -36,6 +61,8 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
 
 int main()
 {
+    test();
+
     Authenticator::getInstance()->getNewJWToken();
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
