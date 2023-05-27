@@ -32,9 +32,9 @@ HttpRequestBuilder& HttpRequestBuilder::addDataToHeader(const std::string& key, 
     return *this;
 }
 
-HttpRequestBuilder& HttpRequestBuilder::addJWTtokenToHeader(const std::string& jwtToken)
+HttpRequestBuilder& HttpRequestBuilder::addJWTokenToHeader(const std::string& jwtToken)
 {
-    m_httpRequest->addJWTtokenToHeader(jwtToken);
+    m_httpRequest->addJWTokenToHeader(jwtToken);
     return *this;
 }
 
@@ -47,7 +47,7 @@ HttpRequestBuilder& HttpRequestBuilder::addDataToBody(const std::string& data)
 
 HttpRequestBuilder& HttpRequestBuilder::addDataToBody(const uint8_t* data, uint32_t size)
 {
-    m_httpRequest->addDataToBody(std::make_shared<std::string>(data, size));
+    m_httpRequest->addDataToBody(std::make_shared<std::string>((char*)data, size));
     return *this;
 }
 
@@ -61,4 +61,22 @@ HttpRequestBuilder& HttpRequestBuilder::addDataToBody(std::string&& data)
 std::unique_ptr<HttpRequest> HttpRequestBuilder::build()
 {
     return std::move(m_httpRequest);
+}
+
+HttpRequestBuilder& HttpRequestBuilder::MultipartFormDataInit()
+{
+    m_httpRequest->MultipartFormDataInit();
+    return *this;
+}
+
+HttpRequestBuilder& HttpRequestBuilder::addTextToFormData(const std::string& name, const std::string& text)
+{
+    m_httpRequest->addTextToFormData(name, text);
+    return *this;
+}
+
+HttpRequestBuilder& HttpRequestBuilder::addFileToFormData(const std::string& name, const std::string& fileDir)
+{
+    m_httpRequest->addFileToFormData(name, fileDir);
+    return *this;
 }

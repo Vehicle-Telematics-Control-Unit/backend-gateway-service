@@ -8,6 +8,7 @@
 class HttpRequestBuilder{
 private:
     std::unique_ptr<HttpRequest> m_httpRequest{nullptr};
+
 public:
     enum REQUEST_TYPE{
         POST_REQUEST,
@@ -22,7 +23,7 @@ public:
     HttpRequestBuilder& addDataToHeader(const std::string& key, const std::string& value);
     //! @brief  insert jwt token to header
     //! @param  jwtToken string containing body data
-    HttpRequestBuilder& addJWTtokenToHeader(const std::string& jwtToken);
+    HttpRequestBuilder& addJWTokenToHeader(const std::string& jwtToken);
     //! @brief  insert body data take care data is copied better use std::move(data)
     //! @param  data string containing body data
     HttpRequestBuilder& addDataToBody(const std::string& data);
@@ -30,6 +31,15 @@ public:
     //! @brief  insert body data take care data is copied better use std::move(data)
     //! @param  data string containing body data
     HttpRequestBuilder& addDataToBody(std::string&& data);
+    //! @brief  used to send Multipart form-data
+    //! @return unique pointer to the build http request
+    HttpRequestBuilder& MultipartFormDataInit();
+    //! @brief  used to send Multipart form-data
+    //! @return unique pointer to the build http request
+    HttpRequestBuilder& addTextToFormData(const std::string& name, const std::string& text);
+    //! @brief  used to send Multipart form-data
+    //! @return unique pointer to the build http request
+    HttpRequestBuilder& addFileToFormData(const std::string& name, const std::string& fileDir);
     //! @brief  build the HttpRequest
     //! @return unique pointer to the build http request
     std::unique_ptr<HttpRequest> build();

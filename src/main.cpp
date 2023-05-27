@@ -3,20 +3,18 @@
 #include <memory>
 #include "http_client/HttpRequestBuilder.hpp"
 #include "someipService/ServiceManagerAdapter.hpp"
-
 #include "servicesId.hpp"
+#include "Authenticator.hpp"
 
-static constexpr char CONTENT_TYPE_JSON[] = "Content-Type: application/json";
-
-
-void sendRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
+void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
     std::string token = "TOKEN";
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
-                                .addJWTtokenToHeader(token)
+                                .addJWTokenToHeader(token)
+                                .addDataToHeader("Content-Type", "application/json")
                                 .addDataToBody(_request->get_payload()->get_data(), _request->get_payload()->get_length())
-                                .addDataToHeader("head", "data1")
+                                .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
     if (httpRequest->send() == CURLE_OK)
@@ -35,8 +33,10 @@ void sendRequestToServer(const std::shared_ptr<vsomeip::message> &_request, cons
     app->send(its_response);
 }
 
+
 int main()
 {
+    Authenticator::getInstance()->getNewJWToken();
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
 
@@ -49,7 +49,7 @@ int main()
     }
 
     std::vector<service_id_call> offeredServices{
-        {BACKEND_SERVER_SERVICE_ID, BACKEND_SERVER_INSTANCE_ID, BACKEND_SERVER_METHOD_ID, std::bind(sendRequestToServer, std::placeholders::_1, app)}};
+        {BACKEND_SERVER_SERVICE_ID, BACKEND_SERVER_INSTANCE_ID, BACKEND_SERVER_METHOD_ID, std::bind(sendPostRequestToServer, std::placeholders::_1, app)}};
 
     ServiceManagerAdapter vsomeService{app, offeredServices};
 

@@ -21,12 +21,15 @@ protected:
     //! @brief CURL pointer used to initialize request params
     CURL* m_curlPtr{nullptr};
     //! @brief Http Request headers
-    struct curl_slist* m_headers{nullptr};
+    struct curl_slist* m_headers{NULL};
     //! @brief response inserted inside the responseString
     std::string m_responseString{};
     //! @brief response header inside the responseString
     std::string m_responseHeaderString{};
     std::shared_ptr<std::string> requestBodyContent{nullptr};
+    curl_mime *m_mime {nullptr};
+    curl_mimepart *m_mime_part{nullptr};
+    bool m_sendMultipartData {false};
 public:
 
     static void initHttpRequestsGlobal();
@@ -48,23 +51,33 @@ public:
 
     //! @brief Add JWT token to Request header
     //! @param jwtToken token to be added to request header
-    void addJWTtokenToHeader(const std::string& jwtToken);
+    void addJWTokenToHeader(const std::string& jwtToken);
 
     //! @brief sends GetRequestClient
     //! @return return response string
-    const std::string getResponse();
+    std::string getResponse();
 
     //! @brief sends GetRequestClient
     //! @return return response header string
-    const std::string getResponseHeader();
+    std::string getResponseHeader();
 
     //! @brief sends GetRequestClient
     //! @return true if succeed
     //! @return false if fails
     CURLcode send();
 
+    //! @brief  used to send Multipart form-data
+    void MultipartFormDataInit();
+    
+    //! @brief add data to multiform data NOTE: you have to call MultipartFormDataInit first
+    void addTextToFormData(const std::string& name, const std::string& text);
+
+    //! @brief add file to multiform data NOTE: you have to call MultipartFormDataInit first
+    void addFileToFormData(const std::string& name, const std::string& fileDir);
+
     //! @brief every request inherit from it to initialize its request params
     virtual bool init() = 0;
+
 
     //! @brief destructor
     virtual ~HttpRequest();
