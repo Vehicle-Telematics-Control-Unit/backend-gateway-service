@@ -12,10 +12,17 @@ void test()
 {
     using json = nlohmann::json;
     json exampleJson = {
+        {"route", "test"},
         {"happy", true},
         {"pi", 3.141},
     };
-    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
+    if(exampleJson.count("route") == 0)
+    {
+        std::cout << "didn't have a specific route!";
+        return;
+    }
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/") + std::string(exampleJson["route"]));
+    exampleJson.erase("route");
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addJWTokenToHeader("token")
                                 .addDataToHeader("Content-Type", "application/json")
@@ -32,13 +39,27 @@ void test()
 
 void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
-    test();
+    // test();
+    std::cout << "gottem ~~~~~!!!\n\n\n";
+    std::shared_ptr<vsomeip::payload> its_payload = _request->get_payload();
+    vsomeip::length_t l = its_payload->get_length();
 
-    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://abbas.requestcatcher.com/test");
-    std::string token = "TOKEN";
+    // Get payload
+    std::stringstream ss;
+    for (vsomeip::length_t i=0; i<l; i++) {
+       ss << *(its_payload->get_data()+i);
+    }
+    ss << '\n';
+    using json = nlohmann::json;
+    json jsonRequest = json::parse(ss.str());
+
+    std::cout << jsonRequest.dump(4);
+    
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/") + std::string(jsonRequest["route"]));
+    jsonRequest.erase("route");
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addDataToHeader("Content-Type", "application/json")
-                                .addDataToBody(_request->get_payload()->get_data(), _request->get_payload()->get_length())
+                                .addDataToBody(jsonRequest.dump(4))
                                 .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
@@ -48,8 +69,8 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
         std::cout << "[" << httpRequest->getResponseHeader() << "]\n";
     }
 
-    std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
-    std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
+    // std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
+    // std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
 
     // std::vector<vsomeip::byte_t> its_payload_data = {'O', 'K', '\n', 0};
     // its_payload->set_data(its_payload_data);

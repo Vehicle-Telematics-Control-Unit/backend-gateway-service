@@ -1,5 +1,5 @@
 {
-    "unicast" : "172.18.0.2",
+    "unicast" : "127.0.0.1",
     "applications" : 
     [
         {
@@ -15,7 +15,7 @@
             "unreliable" : "30509"
         }
     ],
-    "routing" : "Hello",
+    "routing" : "UDP_Service",
     "service-discovery" :
     {
         "enable" : "true",
