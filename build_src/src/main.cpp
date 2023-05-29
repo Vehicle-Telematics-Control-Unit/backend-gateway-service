@@ -51,11 +51,11 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
     std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
     std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
 
-    std::vector<vsomeip::byte_t> its_payload_data = {'O', 'K', '\n', 0};
-    its_payload->set_data(its_payload_data);
-    its_response->set_payload(its_payload);
+    // std::vector<vsomeip::byte_t> its_payload_data = {'O', 'K', '\n', 0};
+    // its_payload->set_data(its_payload_data);
+    // its_response->set_payload(its_payload);
 
-    app->send(its_response);
+    // app->send(its_response);
 }
 
 
@@ -67,7 +67,7 @@ int main()
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
 
-    std::shared_ptr<vsomeip::application> app{vsomeip::runtime::get()->create_application()};
+    std::shared_ptr<vsomeip::application> app{vsomeip::runtime::get()->create_application("backend_gateway")};
 
     if (!app->init())
     {

@@ -30,3 +30,6 @@ COPY --from=builder /usr/lib/libbrotlicommon.so.1 /usr/lib
 COPY --from=builder /lib/libz.so.1 /libs
 COPY --from=builder /lib/libcrypto.so.3 /lib
 COPY --from=builder /lib/libssl.so.3 /lib
+
+# COPY vsomeip.json /etc/vsomeip/vsomeip.json
+# ENV VSOMEIP_CONFIGURATION=/etc/vsomeip/vsomeip.json
