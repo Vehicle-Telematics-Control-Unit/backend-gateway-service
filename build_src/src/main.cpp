@@ -7,26 +7,29 @@
 #include "nlohmann/json.hpp"
 #include "Authenticator.hpp"
 
+#define TESTING_MODE 1
+
 
 void test()
 {
     using json = nlohmann::json;
     json exampleJson = {
-        {"route", "test"},
-        {"happy", true},
-        {"pi", 3.141},
+        {"code", 1234},
+        {"description", "bad lol"},
+        {"state", "faulty"},
+        {"route", "alerts/receive/"}
     };
     if(exampleJson.count("route") == 0)
     {
         std::cout << "didn't have a specific route!";
         return;
     }
-    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/") + std::string(exampleJson["route"]));
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://vehicleplus.cloud/") + std::string(exampleJson["route"]));
     exampleJson.erase("route");
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
-                                .addJWTokenToHeader("token")
                                 .addDataToHeader("Content-Type", "application/json")
                                 .addDataToBody(exampleJson.dump(4))
+                                .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
     if (httpRequest->send() == CURLE_OK)
@@ -39,24 +42,26 @@ void test()
 
 void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
-    // test();
-    std::cout << "gottem ~~~~~!!!\n\n\n";
     std::shared_ptr<vsomeip::payload> its_payload = _request->get_payload();
     vsomeip::length_t l = its_payload->get_length();
 
-    // Get payload
-    std::stringstream ss;
-    for (vsomeip::length_t i=0; i<l; i++) {
-       ss << *(its_payload->get_data()+i);
-    }
-    ss << '\n';
     using json = nlohmann::json;
-    json jsonRequest = json::parse(ss.str());
+    json jsonRequest = json::parse(std::string((char*)its_payload->get_data(), its_payload->get_length()));
 
-    std::cout << jsonRequest.dump(4);
     
-    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/") + std::string(jsonRequest["route"]));
+    #if TESTING_MODE
+    std::cout << "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH";
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/test"));
+    #else
+    if(jsonRequest.count("route") == 0)
+    {
+        std::cout << "didn't have a specific route!";
+        return;
+    }
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://vehicleplus.cloud/" + jsonRequest["route"]));
     jsonRequest.erase("route");
+    #endif
+
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addDataToHeader("Content-Type", "application/json")
                                 .addDataToBody(jsonRequest.dump(4))
@@ -69,22 +74,24 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
         std::cout << "[" << httpRequest->getResponseHeader() << "]\n";
     }
 
-    // std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
-    // std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
+    std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
+    std::shared_ptr<vsomeip::payload> response_payload = vsomeip::runtime::get()->create_payload();
 
-    // std::vector<vsomeip::byte_t> its_payload_data = {'O', 'K', '\n', 0};
-    // its_payload->set_data(its_payload_data);
-    // its_response->set_payload(its_payload);
+    // std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(httpRequest->getResponse().begin(), httpRequest->getResponse().end());
+    std::string responseMsg = httpRequest->getResponse();
+    std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(responseMsg.begin(), responseMsg.end());
+    response_payload->set_data(response_payload_data);
+    its_response->set_payload(response_payload);
 
-    // app->send(its_response);
+    app->send(its_response);
 }
 
 
 int main()
 {
-    test();
-
     Authenticator::getInstance()->getNewJWToken();
+
+    // test();
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
 
