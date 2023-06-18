@@ -1,5 +1,5 @@
 # backend-gateway-service
-Containerized service that directly communicate with the back-end server.
+Containerized VSOME/IP service that directly communicates with the back-end server written in C++. Uses HTTP-Builder to generate HTTP requests and VSOME/IP-Client APIs to create the some-ip client.
 
 ## Where am I?
 ![diagram](./readme_imgs/diagram.png)
