@@ -53,9 +53,13 @@ public:
     //! @param jwtToken token to be added to request header
     void addJWTokenToHeader(const std::string& jwtToken);
 
-    //! @brief sends GetRequestClient
+    //! @brief get response string
     //! @return return response string
     std::string getResponse();
+
+    //! @brief sends response code
+    //! @return return response code int64
+    int64_t getResponseCode();
 
     //! @brief sends GetRequestClient
     //! @return return response header string

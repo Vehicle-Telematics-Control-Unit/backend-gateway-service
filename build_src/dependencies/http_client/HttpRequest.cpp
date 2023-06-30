@@ -121,6 +121,14 @@ std::string HttpRequest::getResponse()
     return m_responseString;
 }
 
+int64_t HttpRequest::getResponseCode()
+{
+    int64_t response_code;
+    curl_easy_getinfo(m_curlPtr, CURLINFO_RESPONSE_CODE, &response_code);
+    printf("HTTP Status Code: %ld\n", response_code);
+    return response_code;
+}
+
 std::string HttpRequest::getResponseHeader()
 {
     return m_responseHeaderString;

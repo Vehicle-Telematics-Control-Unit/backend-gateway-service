@@ -6,6 +6,7 @@
 #include "servicesId.hpp"
 #include "nlohmann/json.hpp"
 #include "Authenticator.hpp"
+#include "Internetconnectivity.hpp"
 
 #define TESTING_MODE 1
 
@@ -24,8 +25,12 @@ void test()
         std::cout << "didn't have a specific route!";
         return;
     }
+    #if TESTING_MODE
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/test"));
+    #else
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://vehicleplus.cloud/") + std::string(exampleJson["route"]));
     exampleJson.erase("route");
+    #endif
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addDataToHeader("Content-Type", "application/json")
                                 .addDataToBody(exampleJson.dump(4))
@@ -48,7 +53,6 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
     using json = nlohmann::json;
     json jsonRequest = json::parse(std::string((char*)its_payload->get_data(), its_payload->get_length()));
 
-    
     #if TESTING_MODE
     std::cout << "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH";
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/test"));
@@ -68,18 +72,24 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
                                 .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
+    json vsomeipResponseJson;
     if (httpRequest->send() == CURLE_OK)
     {
-        std::cout << "[" << httpRequest->getResponse() << "]\n";
-        std::cout << "[" << httpRequest->getResponseHeader() << "]\n";
+        std::cout << "- response [" << httpRequest->getResponse() << "]\n";
+        std::cout << "- response code [" << httpRequest->getResponseCode() << "]\n";
+        std::cout << "- response header [" << httpRequest->getResponseHeader() << "]\n";
+        // std::string responseMsg = httpRequest->getResponse();
+        vsomeipResponseJson["response_code"] = httpRequest->getResponseCode();
+        vsomeipResponseJson["response"] = httpRequest->getResponse();
     }
+    std::string vsomeipResponse = vsomeipResponseJson.dump();
+    std::cout << "\n\n\n vsomeipResponseJson: " << vsomeipResponseJson << '\n';
 
     std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
     std::shared_ptr<vsomeip::payload> response_payload = vsomeip::runtime::get()->create_payload();
 
     // std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(httpRequest->getResponse().begin(), httpRequest->getResponse().end());
-    std::string responseMsg = httpRequest->getResponse();
-    std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(responseMsg.begin(), responseMsg.end());
+    std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(vsomeipResponse.begin(), vsomeipResponse.end());
     response_payload->set_data(response_payload_data);
     its_response->set_payload(response_payload);
 
@@ -89,9 +99,17 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
 
 int main()
 {
+    std::thread ie_thread([]{
+        while(1)
+        {
+            std::cout << "internet connection: " << (InternetConnectivity::isConnectedToInternet() ? "true" : "false") << '\n';
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+        }
+    });
+
     Authenticator::getInstance()->getNewJWToken();
 
-    // test();
+    test();
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
 

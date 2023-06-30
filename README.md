@@ -8,5 +8,5 @@ Containerized VSOME/IP service that directly communicates with the back-end serv
 
 ## how to run 
 ```
-docker run -it --privileged --net host -v /tmp:/tmp:z backend_gateway_alpine
+docker run --rm -it --privileged --net host -v /tmp:/tmp:z backend_gateway_alpine
 ```
