@@ -8,7 +8,7 @@
 #include "Authenticator.hpp"
 #include "Internetconnectivity.hpp"
 
-#define TESTING_MODE 1
+#define TESTING_MODE 0
 
 
 void test()
@@ -62,7 +62,7 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
         std::cout << "didn't have a specific route!";
         return;
     }
-    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://vehicleplus.cloud/" + jsonRequest["route"]));
+    HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://vehicleplus.cloud/") + std::string(jsonRequest["route"]));
     jsonRequest.erase("route");
     #endif
 
