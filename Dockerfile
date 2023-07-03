@@ -31,5 +31,8 @@ COPY --from=builder /lib/libz.so.1 /libs
 COPY --from=builder /lib/libcrypto.so.3 /lib
 COPY --from=builder /lib/libssl.so.3 /lib
 
+WORKDIR /build_src/build
+
+ENTRYPOINT [ "./backend_gateway" ]
 # COPY vsomeip.json /etc/vsomeip/vsomeip.json
 # ENV VSOMEIP_CONFIGURATION=/etc/vsomeip/vsomeip.json

@@ -15,7 +15,7 @@ private:
     std::string m_jwtToken;
     static std::shared_ptr<Authenticator> m_instance;
     static std::mutex m_mutex;
-    std::string m_token;
+    std::string m_token{""};
 
     // Private constructor to prevent direct instantiation
 

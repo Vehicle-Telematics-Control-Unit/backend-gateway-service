@@ -33,7 +33,7 @@ void test()
     #endif
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addDataToHeader("Content-Type", "application/json")
-                                .addDataToBody(exampleJson.dump(4))
+                                .addDataToBody(exampleJson.dump())
                                 .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
@@ -47,6 +47,24 @@ void test()
 
 void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, const std::shared_ptr<vsomeip::application> &app)
 {
+    std::cout << "NEW REQUEST ON THE WAY!\n";
+    if(!InternetConnectivity::isConnectedToInternet())
+    {
+        std::cout << "couldn't send request not connected to internet !!";
+        std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
+        std::shared_ptr<vsomeip::payload> response_payload = vsomeip::runtime::get()->create_payload();
+
+        std::string vsomeipResponse = R"({
+            "response_code": 502,
+            "response": ""
+        })";
+        std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(vsomeipResponse.begin(), vsomeipResponse.end());
+        response_payload->set_data(response_payload_data);
+        its_response->set_payload(response_payload);
+        app->send(its_response);
+        
+        return;
+    }
     std::shared_ptr<vsomeip::payload> its_payload = _request->get_payload();
     vsomeip::length_t l = its_payload->get_length();
 
@@ -54,7 +72,6 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
     json jsonRequest = json::parse(std::string((char*)its_payload->get_data(), its_payload->get_length()));
 
     #if TESTING_MODE
-    std::cout << "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH";
     HttpRequestBuilder HttpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, std::string("https://abbas.requestcatcher.com/test"));
     #else
     if(jsonRequest.count("route") == 0)
@@ -68,7 +85,7 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
 
     std::unique_ptr<HttpRequest> httpRequest = HttpBuilder
                                 .addDataToHeader("Content-Type", "application/json")
-                                .addDataToBody(jsonRequest.dump(4))
+                                .addDataToBody(jsonRequest.dump())
                                 .addJWTokenToHeader(Authenticator::getInstance()->getToken())
                                 .build();
 
@@ -88,12 +105,19 @@ void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> &_request, 
     std::shared_ptr<vsomeip::message> its_response = vsomeip::runtime::get()->create_response(_request);
     std::shared_ptr<vsomeip::payload> response_payload = vsomeip::runtime::get()->create_payload();
 
-    // std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(httpRequest->getResponse().begin(), httpRequest->getResponse().end());
     std::vector<vsomeip::byte_t> response_payload_data = std::vector<uint8_t>(vsomeipResponse.begin(), vsomeipResponse.end());
     response_payload->set_data(response_payload_data);
     its_response->set_payload(response_payload);
 
     app->send(its_response);
+}
+
+void RequestJWTokenWaitTillAcquired()
+{
+    while(!InternetConnectivity::isConnectedToInternet()) { std::this_thread::sleep_for(std::chrono::seconds(1)); }
+
+    while(Authenticator::getInstance()->getToken() == "")
+        Authenticator::getInstance()->getNewJWToken();
 }
 
 
@@ -107,9 +131,6 @@ int main()
         }
     });
 
-    Authenticator::getInstance()->getNewJWToken();
-
-    test();
 
     using service_id_call = ServiceManagerAdapter::serviceIdAndCallBack;
 
@@ -131,5 +152,8 @@ int main()
         std::cerr << "Couldn't initialize vsomeip services" << std::endl;
         return -1;
     }
+    
+    RequestJWTokenWaitTillAcquired();
+
     vsomeService.start();
 }
