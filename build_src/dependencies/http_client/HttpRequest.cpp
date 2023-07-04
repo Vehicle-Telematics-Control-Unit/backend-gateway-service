@@ -85,7 +85,7 @@ void HttpRequest::addDataToHeader(const std::string& data)
     m_headers = curl_slist_append(m_headers, data.c_str());
 }
 
-void HttpRequest::addDataToBody(const std::shared_ptr<std::string>& bodyData)
+void HttpRequest::addDataToBody(std::shared_ptr<std::string> bodyData)
 {
     requestBodyContent = bodyData;
     curl_easy_setopt(m_curlPtr, CURLOPT_POSTFIELDS, requestBodyContent.get()->c_str());

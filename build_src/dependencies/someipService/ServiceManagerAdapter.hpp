@@ -19,7 +19,7 @@ public:
         const uint32_t service_id;
         const uint32_t instance_id;
         const uint32_t method_id;
-        const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback;
+        const std::function<void(std::shared_ptr<vsomeip::message>)> callback;
     };
 
     ServiceManagerAdapter(std::shared_ptr<vsomeip::application> app, const std::vector<serviceIdAndCallBack> &servicesIdsCallbacks);

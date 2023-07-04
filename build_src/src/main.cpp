@@ -45,7 +45,7 @@ void test()
 
 }
 
-void sendPostRequestToServer(const std::shared_ptr<vsomeip::message> _request, const std::shared_ptr<vsomeip::application> _app)
+void sendPostRequestToServer(std::shared_ptr<vsomeip::message> _request, const std::shared_ptr<vsomeip::application> _app)
 {
     std::thread{[](const std::shared_ptr<vsomeip::message> request, const std::shared_ptr<vsomeip::application> app)
     {
