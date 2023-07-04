@@ -7,6 +7,7 @@
 #include "http_client/HttpRequestBuilder.hpp"
 #include "nlohmann/json.hpp"
 #include <fstream>
+#include <optional>
 
 class Authenticator
 {
@@ -44,7 +45,7 @@ private:
         exec(std::string("openssl rsautl -decrypt -keyform DER -inkey ") + privateKeyPath +  " -in " + challengePath + " -out decrypted_data.bin -pkcs -raw");
     }
 
-    void requestChallenge()
+    bool requestChallenge()
     {
         HttpRequestBuilder httpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://vehicleplus.cloud/authentication/tcu/challenge");
         
@@ -56,7 +57,7 @@ private:
         if(challengeRequest->send() != CURLE_OK)
         {
             std::cout << "failed to resolve authentication challenge!\n";
-            return;
+            return false;
         }
 
         std::cout << challengeRequest->getResponse(); 
@@ -75,11 +76,11 @@ private:
         }
 
         outputFile.close();
-
+        return true;
     }
 
 
-    std::string sendChallengeSolutionGetNewToken()
+    std::optional<std::string> sendChallengeSolutionGetNewToken()
     {
         HttpRequestBuilder httpBuilder(HttpRequestBuilder::REQUEST_TYPE::POST_REQUEST, "https://vehicleplus.cloud/authentication/tcu/login");
         
@@ -92,9 +93,10 @@ private:
         if(challengeRequest->send() != CURLE_OK)
         {
             std::cout << "failed to send challenge solution!\n";
+            return std::nullopt;
         }
 
-        return std::move(challengeRequest->getResponse());
+        return challengeRequest->getResponse();
     }
 
 
@@ -115,16 +117,23 @@ public:
 
     bool getNewJWToken()
     {
-        requestChallenge();
+        if(!requestChallenge())
+            return false;
         decryptChallenge("../private_key.der", "./challenge.bin");
-        std::string response = sendChallengeSolutionGetNewToken();
+        if(!sendChallengeSolutionGetNewToken().has_value())
+            return false;
+        std::string response = sendChallengeSolutionGetNewToken().value();
         std::cout << "\n\n\n\n";
         std::cout << response;
         std::cout << "\n\n\n\n";
         using json = nlohmann::json;
         json data = json::parse(response);
 
-        // str.erase(std::remove(str.begin(), str.end(), '"'), str.end());
+        if(!data.count("token"))
+            return false;
+        if(!data.count("expiration"))
+            return false;
+
         m_token =  data["token"];
         std::cout << m_token;
 

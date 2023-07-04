@@ -8,18 +8,14 @@ class InternetConnectivity
 public:
     static bool isConnectedToInternet()
     {
-        FILE *output;
+        // ping Google DNS once
+        int returnCode = system("ping -c 1 -w 500 8.8.8.8 > /dev/null 2>&1");
 
-        if (!(output = popen("/sbin/route -n | grep -c '^0\\.0\\.0\\.0'", "r")))
-        {
-            return 1;
-        }
-        unsigned int i;
-        fscanf(output, "%u", &i);
-        pclose(output);
-        if (i == 1)
+        // Check the return code to determine if the command was successful
+        if (returnCode == 0)
             return true;
-        return false;
+        else 
+            return false;
     }
 };
 
