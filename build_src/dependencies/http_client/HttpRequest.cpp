@@ -166,7 +166,6 @@ void HttpRequest::addTextToFormData(const std::string& name, const std::string& 
 
 void HttpRequest::addFileToFormData(const std::string& name, const std::string& fileDir)
 {
-    std::cout << "YOOOOOOOOOOOOO!";
     if(!m_sendMultipartData)
     {
         std::cout << "init the use of MultipartFormDataInit first";
