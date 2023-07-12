@@ -17,6 +17,8 @@ RUN cd build_src; \
     make
 
 FROM alpine:3.17.2
+
+RUN mkdir /composefiles
 RUN apk add openssl --no-cache
 COPY --from=builder /build_src/build /build_src/build
 COPY --from=builder /build_src/ChainedCertficate.cer /build_src

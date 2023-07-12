@@ -14,5 +14,5 @@ $ docker buildx build --push \
 
 ## how to run 
 ```
-docker run --name backend_gateway -it --rm --privileged --net host -v docker run --name backend_gateway -it --rm --privileged --net host -v /tmp:/tmp:z registry.digitalocean.com/vehicle-plus/tcu_backend-gateway:v0
+docker run --name backend_gateway -it --rm --privileged --net host -v /tmp:/tmp:z -v /etc/compose_files/new:/composefiles:z registry.digitalocean.com/vehicle-plus/tcu_backend-gateway:v0
 ```

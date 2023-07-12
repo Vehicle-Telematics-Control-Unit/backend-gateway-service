@@ -2,21 +2,19 @@
 #define INTERNET_CONNECTIVITY_HPP_
 
 #include <cstdio>
-
+#include <atomic>
 class InternetConnectivity
 {
 public:
-    static bool isConnectedToInternet()
+    static std::atomic<bool> internetConnectionState;
+    
+    static bool checkInternetConnection()
     {
         // ping Google DNS once
-        int returnCode = system("ping -c 1 -w 500 8.8.8.8 > /dev/null 2>&1");
-
-        // Check the return code to determine if the command was successful
-        if (returnCode == 0)
-            return true;
-        else 
-            return false;
+        InternetConnectivity::internetConnectionState = system("ping -c 1 -i 0.1 8.8.8.8 > /dev/null 2>&1") ? false : true;
+        return internetConnectionState;
     }
 };
 
+std::atomic<bool> InternetConnectivity::internetConnectionState{false};
 #endif
