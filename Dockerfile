@@ -2,14 +2,11 @@
 # FROM vsomeip_build:v0 as builder
 FROM registry.digitalocean.com/vehicle-plus/tcu_builder_packs:v8 as builder
 
-
-COPY build_src build_src
-
 RUN apk update && apk add --no-cache --virtual .second_build_dependency \
     binutils cmake curl gcc g++ git libtool make tar build-base linux-headers
-
 RUN apk add --no-cache curl-dev 
 
+COPY build_src build_src
 RUN cd build_src; \
     mkdir build; \
     cd build; \

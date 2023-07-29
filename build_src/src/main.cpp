@@ -15,7 +15,6 @@
 #define OTA_TIME_OUT 20000
 
 
-static std::atomic<bool> OTAtimeOut{false};
 
 
 
@@ -25,6 +24,8 @@ static std::atomic<bool> OTAtimeOut{false};
 
 void skipUpdate()
 {
+    std::cout << ">>>>>>>>> update will be skipped\n";
+    std::cout << ">>>>>>>>> sending skip to OTA client\n";
     using boost::asio::ip::udp;
     using boost::asio::ip::address;
     std::string message = "no";
@@ -40,6 +41,8 @@ void skipUpdate()
 
 void startUpdate()
 {
+    std::cout << ">>>>>>>>> starting update \n";
+    std::cout << ">>>>>>>>> sending start to OTA client \n";
     using boost::asio::ip::udp;
     using boost::asio::ip::address;
     std::string message = "yes";
@@ -339,14 +342,29 @@ int main()
         return -1;
     }
 
+    std::mutex otaMtx;
+    bool OTAstarted{false};
+    bool OTAtimeOut{false};
+
     std::thread OTAtimer ([&]{
         std::this_thread::sleep_for(std::chrono::seconds(20));
-        OTAtimeOut = true;
+        {
+            std::unique_lock ul(otaMtx);
+            OTAtimeOut = true;
+            if(!OTAstarted)
+                skipUpdate();
+        }
     });
 
     RequestJWTokenWaitTillAcquired();
 
-    if(!OTAtimeOut)
-        startOTAProcedure();
+    {
+        std::unique_lock ul(otaMtx);
+        if(!OTAtimeOut)
+        {
+            OTAstarted = true;
+            startOTAProcedure();
+        }
+    }
     vsomeService.start();
 }
